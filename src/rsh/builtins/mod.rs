@@ -12,6 +12,7 @@ pub fn load() -> HashMap<String, Builtin> {
 
     h.insert("cd".to_string(), cd as fn(State) -> State);
     h.insert("ls".to_string(), ls as fn(State) -> State);
+    h.insert("echo".to_string(), echo as fn(State) -> State);
 
     h
 }
@@ -76,4 +77,16 @@ fn list_dir(p: &PathBuf) {
     }
 
     print!("\n");
+}
+
+pub fn echo(s: State) -> State {
+    if s.argv[1] == "-n" {
+        let strings = &s.argv[2..s.argv.len()].join(" ");
+        print!("{}", strings);
+    } else {
+        let strings = &s.argv[1..s.argv.len()].join(" ");
+        println!("{}", strings);
+    }
+
+    s
 }
