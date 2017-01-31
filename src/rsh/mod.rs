@@ -1,4 +1,6 @@
-pub mod builtins;
+pub mod utils;
+
+mod builtins;
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -16,9 +18,9 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(cwd: String) -> State {
-        State{
-            cwd: PathBuf::from(cwd),
+    pub fn new(cwd: PathBuf) -> State {
+        State {
+            cwd: utils::make_absolute(cwd).unwrap(),
             environment: HashMap::new(),
             aliases: HashMap::new(),
             argv: Vec::new(),
@@ -44,9 +46,9 @@ pub fn run(initial_state: State) {
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
 
-        s.argv = input.split_whitespace().
-            map(|s| s.to_string() ).
-            collect();
+        s.argv = input.split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
         s.argc = s.argv.len();
 
         print!("\n");
