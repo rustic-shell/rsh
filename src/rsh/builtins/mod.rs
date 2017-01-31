@@ -13,6 +13,10 @@ pub fn load() -> HashMap<String, Builtin> {
     h.insert("cd".to_string(), cd as fn(State) -> State);
     h.insert("ls".to_string(), ls as fn(State) -> State);
     h.insert("echo".to_string(), echo as fn(State) -> State);
+    h.insert("set".to_string(), set as fn(State) -> State);
+    h.insert("unset".to_string(), unset as fn(State) -> State);
+    h.insert("get".to_string(), get as fn(State) -> State);
+
 
     h
 }
@@ -89,4 +93,55 @@ pub fn echo(s: State) -> State {
     }
 
     s
+}
+
+fn set(s: State) -> State {
+
+    let var_name = s.argv.get(1);
+    let value = s.argv.get(2);
+
+    if var_name.is_none() || value.is_none() {
+        println!("set: not enough arguments to set");
+        return s.clone();
+    }
+
+    let mut new_state = s.clone();
+    let var = var_name.unwrap().clone();
+    let val = value.unwrap().clone();
+
+    new_state.variables.insert(var.to_string(), val.to_string());
+
+    new_state
+}
+
+fn unset(s: State) -> State {
+    match s.argv.get(1) {
+        Some(var) => {
+            let mut new_state = s.clone();
+            new_state.variables.remove(var);
+
+            new_state
+        }
+        None => {
+            println!("unset: not enough arguments");
+
+            s.clone()
+        }
+    }
+}
+
+fn get(s: State) -> State {
+    match s.argv.get(1) {
+        Some(var) => {
+            s.variables
+                .get(var)
+                .map(|val| {
+                    println!("{}", val);
+                });
+        }
+        None => println!("get: not enough arguments"),
+    };
+
+    s
+
 }
