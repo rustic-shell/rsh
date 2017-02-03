@@ -1,4 +1,6 @@
-pub mod builtins;
+pub mod utils;
+
+mod builtins;
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -9,17 +11,17 @@ use std::collections::hash_map::Entry;
 #[derive(PartialEq, Debug, Clone)]
 pub struct State {
     cwd: PathBuf,
-    environment: HashMap<String, String>,
+    variables: HashMap<String, String>,
     aliases: HashMap<String, String>,
     argv: Vec<String>,
     argc: usize,
 }
 
 impl State {
-    pub fn new(cwd: String) -> State {
+    pub fn new(cwd: PathBuf) -> State {
         State {
-            cwd: PathBuf::from(cwd),
-            environment: HashMap::new(),
+            cwd: utils::make_absolute(cwd).unwrap(),
+            variables: HashMap::new(),
             aliases: HashMap::new(),
             argv: Vec::new(),
             argc: 0,
@@ -63,7 +65,7 @@ fn parse_args(args: &String) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
 
     if args.len() == 0 {
-        return result
+        return result;
     }
 
     let mut building_string: bool = false;
@@ -77,14 +79,14 @@ fn parse_args(args: &String) -> Vec<String> {
 
                 building_string = false;
                 build_string = String::from("");
-            // the string only begins with quote - "word
+                // the string only begins with quote - "word
             } else {
                 building_string = true;
 
                 build_string.push_str(string);
                 build_string.push(' ');
             }
-        // the string ends with quote - word"
+            // the string ends with quote - word"
         } else if string.ends_with("\"") {
             build_string.push_str(string);
             result.push(build_string);
@@ -96,7 +98,7 @@ fn parse_args(args: &String) -> Vec<String> {
             if building_string {
                 build_string.push_str(string);
                 build_string.push(' ');
-            // the string is not inside a quote section
+                // the string is not inside a quote section
             } else {
                 result.push(string.to_string());
             }
